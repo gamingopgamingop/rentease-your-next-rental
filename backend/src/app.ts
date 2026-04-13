@@ -17,6 +17,10 @@ import bookingRoutes from './modules/booking/booking.routes.js';
 import paymentRoutes from './modules/payment/payment.routes.js';
 import reviewRoutes from './modules/review/review.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
+import pricingRoutes from './modules/pricing/pricing.routes.js';
+import recommendationRoutes from './modules/recommendation/recommendation.routes.js';
+import notificationRoutes from './modules/notification/notification.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 
 const app = express();
 
@@ -81,6 +85,10 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/pricing', pricingRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.all('*', (req, res, next) => {

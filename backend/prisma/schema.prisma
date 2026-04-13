@@ -68,6 +68,7 @@ model User {
   payments      Payment[]
   reviews       Review[]
   notifications Notification[]
+  activityLogs  ActivityLog[]
 
   @@map("users")
 }
@@ -171,7 +172,9 @@ model Notification {
   userId    String   @map("user_id")
   title     String
   message   String
+  type      NotificationType @default(INFO)
   isRead    Boolean  @default(false) @map("is_read")
+  data      Json?    // Additional metadata
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
@@ -179,5 +182,38 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
+  @@index([type])
   @@map("notifications")
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_PENDING
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  REVIEW_RECEIVED
+  SYSTEM
+  INFO
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String   // booking_created, payment_processed, etc.
+  entityType String? @map("entity_type") // booking, payment, item
+  entityId  String?  @map("entity_id")
+  details   Json?    // Additional context
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("activity_logs")
 }
