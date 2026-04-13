@@ -1,8 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { config } from '../config/env.js';
 import { AppError } from './errorHandler.js';
 import prisma from '../database/prisma.js';
+
+// Environment safety: Throw error if JWT_SECRET is missing
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is missing from environment variables');
+}
+
+const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
 
 export interface AuthRequest extends Request {
   user?: {
@@ -24,7 +31,7 @@ export const authenticate = async (
       throw new AppError('Authentication required', 401);
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret) as {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
       role: string;
