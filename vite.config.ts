@@ -14,14 +14,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger(), tailwindcss()].filter(Boolean),
-  css: {
-    preprocessorOptions: {
-      tailwindcss: {},
-    },
-    postcss: {
-      plugins: [tailwindcss],
-    },
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
