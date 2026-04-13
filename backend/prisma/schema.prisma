@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  RENTER
+}
+
+enum ItemCategory {
+  TOOLS
+  ELECTRONICS
+  APPLIANCES
+  VEHICLES
+  SPORTS
+  FURNITURE
+  CLOTHING
+  OTHER
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  WORN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      UserRole @default(RENTER)
+  location  String?
+  avatarUrl String?  @map("avatar_url")
+  bio       String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  ownedItems    Item[]     @relation("ItemOwner")
+  bookings      Booking[]  @relation("RenterBookings")
+  ownedBookings Booking[]  @relation("OwnerBookings")
+  payments      Payment[]
+  reviews       Review[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Item {
+  id             String        @id @default(uuid())
+  ownerId        String        @map("owner_id")
+  name           String
+  category       ItemCategory  @default(OTHER)
+  description    String?
+  condition      ItemCondition @default(GOOD)
+  pricePerDay    Decimal       @map("price_per_day")
+  location       String?
+  imageUrl       String?       @map("image_url")
+  availableFrom  DateTime?     @map("availability_start")
+  availableTo    DateTime?     @map("availability_end")
+  isAvailable    Boolean       @default(true) @map("is_available")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  owner    User      @relation("ItemOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+  reviews  Review[]
+
+  @@index([ownerId])
+  @@index([category])
+  @@index([location])
+  @@index([isAvailable])
+  @@map("items")
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  itemId      String        @map("item_id")
+  renterId    String        @map("renter_id")
+  ownerId     String        @map("owner_id")
+  startDate   DateTime      @map("start_date")
+  endDate     DateTime      @map("end_date")
+  totalPrice  Decimal       @map("total_price")
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  item     Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  renter   User      @relation("RenterBookings", fields: [renterId], references: [id], onDelete: Cascade)
+  owner    User      @relation("OwnerBookings", fields: [ownerId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([itemId])
+  @@index([renterId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("bookings")
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  bookingId     String        @map("booking_id")
+  payerId       String        @map("payer_id")
+  amount        Decimal
+  paymentMethod String        @default("mock_card") @map("payment_method")
+  status        PaymentStatus @default(COMPLETED)
+  transactionId String?       @unique @map("transaction_id")
+  receiptUrl    String?       @map("receipt_url")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  payer   User    @relation(fields: [payerId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([payerId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  itemId     String   @map("item_id")
+  reviewerId String   @map("reviewer_id")
+  rating     Int // 1-5
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  item     Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  reviewer User @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, reviewerId]) // One review per user per item
+  @@index([itemId])
+  @@index([reviewerId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
