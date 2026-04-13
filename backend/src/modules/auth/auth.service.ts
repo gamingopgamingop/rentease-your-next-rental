@@ -134,11 +134,11 @@ export class AuthService {
     const payload = { id: userId, email, role };
 
     const accessToken = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: (config.jwt.expiresIn || '7d') as string,
+      expiresIn: config.jwt.expiresIn || '7d',
     });
 
     const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, {
-      expiresIn: (config.jwt.refreshExpiresIn || '30d') as string,
+      expiresIn: config.jwt.refreshExpiresIn || '30d',
     });
 
     return {
