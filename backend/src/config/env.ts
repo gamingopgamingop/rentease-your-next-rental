@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import type { StringValue } from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -15,9 +14,9 @@ export const config = {
   // JWT
   jwt: {
     secret: process.env.JWT_SECRET || 'fallback-secret-change-in-production',
-    expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as StringValue,
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret',
-    refreshExpiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '30d') as StringValue,
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
 
   // Bcrypt

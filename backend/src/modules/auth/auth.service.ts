@@ -135,11 +135,11 @@ export class AuthService {
 
     const accessToken = jwt.sign(payload, JWT_SECRET, {
       expiresIn: config.jwt.expiresIn || '7d',
-    });
+    } as any);
 
     const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, {
       expiresIn: config.jwt.refreshExpiresIn || '30d',
-    });
+    } as any);
 
     return {
       accessToken,
